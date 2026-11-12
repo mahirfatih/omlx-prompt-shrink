@@ -76,6 +76,7 @@ Defaults match a 32K oMLX profile:
 3. **Plan only** — with neither, the call returns `needs_summary: true`, the
    exact `summary_prompt` to use, and the token counts. **No message content is
    echoed back**, so the result stays small; call again with `summary=<text>`.
+   Pass `model=""` to force this step even when the environment sets a model.
 
 `compact_context` returns the assembled `messages` list only in modes 1 and 2,
 and leaves the list untouched (`compacted: false`) when it is already within

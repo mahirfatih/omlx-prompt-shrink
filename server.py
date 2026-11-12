@@ -310,7 +310,8 @@ def compact_context(
     method = "provided"
     used_summary = summary
     if used_summary is None:
-        resolved_model = model or DEFAULT_MODEL
+        # model="" forces the plan-only step even when the environment sets a model
+        resolved_model = model if model is not None else DEFAULT_MODEL
         if not resolved_model:
             return json.dumps(
                 {
