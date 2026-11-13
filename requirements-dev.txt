@@ -1,0 +1,6 @@
+# Development-only dependencies (the server itself needs only `mcp`).
+mcp
+pytest
+ruff
+# optional: closer token counts in tests and at runtime
+tiktoken
