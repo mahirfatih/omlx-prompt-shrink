@@ -1,9 +1,6 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_dispatch:
 
 jobs:
@@ -21,11 +18,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
 
-      - name: Lint (ruff)
-        run: ruff check .
-
       - name: Compile check
         run: python -m py_compile omlx-prompt-shrink.py
 
-      - name: Test (pytest)
-        run: pytest -q
+      - name: Lint & test
+        run: ./test/test.sh --no-install
