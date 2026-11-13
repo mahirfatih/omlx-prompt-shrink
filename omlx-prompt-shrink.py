@@ -50,7 +50,7 @@ logger = logging.getLogger("omlx-prompt-shrink")
 logger.addHandler(logging.StreamHandler(sys.stderr))
 logger.setLevel(logging.INFO)
 
-server = MCPServer("omlx-prompt-shrink")
+server = MCPServer("oMLX Prompt Shrink")
 
 
 def _content_text(content: Any) -> str:
