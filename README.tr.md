@@ -254,8 +254,7 @@ omlx-prompt-shrink/
 ├── README.tr.md             # Bu dosya (Türkçe)
 ├── CONTRIBUTING.md          # Kurulum, testler, commit kuralları
 ├── CHANGELOG.md             # Keep a Changelog sürüm notları
-├── requirements.txt         # Çalışma zamanı bağımlılıkları (mcp)
-├── requirements-dev.txt     # Geliştirme bağımlılıkları (pytest, ruff, tiktoken)
+├── requirements-dev.txt     # Geliştirme bağımlılıkları (mcp, pytest, ruff, tiktoken)
 ├── .ruff.toml               # Ruff lint yapılandırması
 ├── .github/workflows/ci.yml # CI: lint + derleme + testler
 ├── tests/                   # pytest birim testleri

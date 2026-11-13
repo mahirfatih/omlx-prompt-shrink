@@ -257,8 +257,7 @@ omlx-prompt-shrink/
 ├── README.tr.md             # Turkish documentation
 ├── CONTRIBUTING.md          # Setup, tests, commit conventions
 ├── CHANGELOG.md             # Keep a Changelog release notes
-├── requirements.txt         # Runtime dependencies (mcp)
-├── requirements-dev.txt     # Dev dependencies (pytest, ruff, tiktoken)
+├── requirements-dev.txt     # Dev dependencies (mcp, pytest, ruff, tiktoken)
 ├── .ruff.toml               # Ruff lint configuration
 ├── .github/workflows/ci.yml # CI: lint + compile + tests
 ├── tests/                   # pytest unit tests

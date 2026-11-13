@@ -1,3 +1,0 @@
-mcp
-# optional: a real tokenizer for closer token counts (falls back to chars/4 without it)
-# tiktoken
