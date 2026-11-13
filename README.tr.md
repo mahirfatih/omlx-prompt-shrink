@@ -255,11 +255,14 @@ omlx-prompt-shrink/
 ├── CONTRIBUTING.md          # Kurulum, testler, commit kuralları
 ├── CHANGELOG.md             # Keep a Changelog sürüm notları
 ├── requirements-dev.txt     # Geliştirme bağımlılıkları (mcp, pytest, ruff, tiktoken)
+├── pytest.ini               # pytest yapılandırması (testpaths, python_files)
 ├── .ruff.toml               # Ruff lint yapılandırması
 ├── .github/workflows/ci.yml # CI: lint + derleme + testler
-├── tests/                   # pytest birim testleri
+├── test/                    # Test runner + pytest birim testleri
+│   ├── test.sh              # Tek test runner (ruff + pytest)
+│   ├── README.md            # Test klasörü kılavuzu
 │   ├── conftest.py          # Sunucu modülünü yola göre yükler; ortak fixture'lar
-│   └── test_omlx_prompt_shrink.py # Saf yardımcılar + tokenizer çözümleme
+│   └── omlx-prompt-shrink-tests.py # Saf yardımcılar + tokenizer çözümleme
 ├── LICENSE                  # MIT
 └── .gitignore
 ```
@@ -269,13 +272,15 @@ omlx-prompt-shrink/
 ## 🧪 Test ve CI
 
 ```bash
-pip install -r requirements-dev.txt
-ruff check .        # lint
-pytest -q           # birim testleri
+./test/test.sh              # dev bağımlılıkları kur, sonra ruff + pytest
+./test/test.sh --lint       # yalnızca ruff
+./test/test.sh --no-install # pip install adımını atla
+./test/test.sh --only test/omlx-prompt-shrink-tests.py::test_compact_uses_provided_summary
 ```
 
-- **Paketler:** `tests/` saf yardımcıları (token tahmini, kırpma, sıkıştırma bölme ve parçalama) ve opsiyonel tokenizer çözümleme mantığını kapsar — ağ yok, MCP taşıması yok.
-- **CI:** [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) her push ve pull request'te Ruff, bir `py_compile` kontrolü ve `pytest` çalıştırır.
+- **Runner:** [`test/test.sh`](./test/test.sh) geliştirme bağımlılıklarını kurar, Ruff ve ardından pytest çalıştırır. Yorumlayıcı, varsa proje `.venv`'i, yoksa `python3`'tür.
+- **Paketler:** [`test/`](./test) saf yardımcıları (token tahmini, kırpma, sıkıştırma bölme ve parçalama) ve opsiyonel tokenizer çözümleme mantığını kapsar — ağ yok, MCP taşıması yok.
+- **CI:** [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) Ruff, bir `py_compile` kontrolü ve `pytest` çalıştırır. **Yalnızca manuel** tetiklenir — Actions sekmesi → CI → Run workflow.
 
 Sunucuyu elle, bir istemci üzerinden çalıştırmak için:
 

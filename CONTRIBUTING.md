@@ -14,11 +14,13 @@ pip install -r requirements-dev.txt   # mcp + pytest + ruff + tiktoken
 ## Running the checks
 
 ```bash
-ruff check .   # lint
-pytest -q      # unit tests
+./test/test.sh              # install dev deps, then ruff + pytest
+./test/test.sh --lint       # ruff only
+./test/test.sh --no-install # skip the pip install step
 ```
 
-Both run in CI (`.github/workflows/ci.yml`) on every push and pull request.
+The runner and both checks run in CI (`.github/workflows/ci.yml`). CI is
+**manual only** (`workflow_dispatch`) — start it from the Actions tab.
 
 ## The server
 
@@ -32,10 +34,25 @@ Everything ships in a single file, `omlx-prompt-shrink.py`. Keep it that way:
 
 ## Tests
 
-Add tests under `tests/`. The server module is loaded by path (its filename is
+Add tests under `test/`. The server module is loaded by path (its filename is
 not a valid Python identifier), and each test gets a fresh module instance, so
 the lazily cached tokenizer resets automatically. Never call the network in a
 test — mock the tokenizer or the summariser endpoint instead.
+
+### File names
+
+File names follow one rule: **scripts and data files are kebab-case**, with the
+Python **test files carrying a `-tests` suffix** (for example
+`omlx-prompt-shrink-tests.py`). A hyphen is not legal in an importable module
+name, so `pytest.ini` pins `python_files = *-tests.py`; pytest imports the file
+by path. Names fixed by a tool — `conftest.py`, `pytest.ini` — keep their name.
+
+Run a single file or test while iterating:
+
+```bash
+./test/test.sh --only test/omlx-prompt-shrink-tests.py
+./test/test.sh --only test/omlx-prompt-shrink-tests.py::test_compact_uses_provided_summary
+```
 
 ## Commit conventions
 

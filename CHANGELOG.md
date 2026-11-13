@@ -13,7 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   default), with a character-based heuristic fallback, controlled by
   `OMLX_SHRINK_TOKENIZER`.
 - `pytest` unit tests for the pure helpers and the tokenizer resolution logic.
-- GitHub Actions CI workflow (Ruff, `py_compile`, `pytest`).
+- `test/` folder with a single runner, `test/test.sh` (Ruff + pytest), and
+  kebab-case test file names.
+- GitHub Actions CI workflow (Ruff, `py_compile`, `pytest`), **manual dispatch
+  only**.
 - Turkish README (`README.tr.md`) and a language switcher between both READMEs.
 - `CONTRIBUTING.md` and this changelog.
 

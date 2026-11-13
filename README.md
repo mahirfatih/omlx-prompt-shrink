@@ -258,11 +258,14 @@ omlx-prompt-shrink/
 ├── CONTRIBUTING.md          # Setup, tests, commit conventions
 ├── CHANGELOG.md             # Keep a Changelog release notes
 ├── requirements-dev.txt     # Dev dependencies (mcp, pytest, ruff, tiktoken)
+├── pytest.ini               # pytest config (testpaths, python_files)
 ├── .ruff.toml               # Ruff lint configuration
 ├── .github/workflows/ci.yml # CI: lint + compile + tests
-├── tests/                   # pytest unit tests
+├── test/                    # Test runner + pytest unit tests
+│   ├── test.sh              # Single test runner (ruff + pytest)
+│   ├── README.md            # Test folder guide
 │   ├── conftest.py          # Loads the server module by path; shared fixtures
-│   └── test_omlx_prompt_shrink.py # Pure helpers + tokenizer resolution
+│   └── omlx-prompt-shrink-tests.py # Pure helpers + tokenizer resolution
 ├── LICENSE                  # MIT
 └── .gitignore
 ```
@@ -272,13 +275,15 @@ omlx-prompt-shrink/
 ## 🧪 Testing & CI
 
 ```bash
-pip install -r requirements-dev.txt
-ruff check .        # lint
-pytest -q           # unit tests
+./test/test.sh              # install dev deps, then ruff + pytest
+./test/test.sh --lint       # ruff only
+./test/test.sh --no-install # skip the pip install step
+./test/test.sh --only test/omlx-prompt-shrink-tests.py::test_compact_uses_provided_summary
 ```
 
-- **Suites:** `tests/` covers the pure helpers (token estimation, trimming, compaction splitting and chunking) plus the optional-tokenizer resolution logic — no network, no MCP transport.
-- **CI:** [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) runs Ruff, a `py_compile` check, and `pytest` on every push and pull request.
+- **Runner:** [`test/test.sh`](./test/test.sh) installs the dev dependencies, runs Ruff, then pytest. The interpreter is the project `.venv` when present, otherwise `python3`.
+- **Suites:** [`test/`](./test) covers the pure helpers (token estimation, trimming, compaction splitting and chunking) plus the optional-tokenizer resolution logic — no network, no MCP transport.
+- **CI:** [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) runs Ruff, a `py_compile` check, and `pytest`. It is **manual only** — trigger it with `workflow_dispatch` (Actions tab → CI → Run workflow).
 
 Run the server by hand to exercise it through a client:
 
