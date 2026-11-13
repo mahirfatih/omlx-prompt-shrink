@@ -27,6 +27,11 @@ from typing import Any
 
 from mcp.server import MCPServer
 
+try:  # optional: a real tokenizer is used when available, otherwise a heuristic
+    import tiktoken  # type: ignore
+except Exception:  # pragma: no cover - optional dependency
+    tiktoken = None
+
 MAX_CONTEXT_TOKENS = 32768
 DEFAULT_KEEP_LAST = 8
 DEFAULT_THRESHOLD = 0.8
@@ -50,6 +55,52 @@ logger = logging.getLogger("omlx-prompt-shrink")
 logger.addHandler(logging.StreamHandler(sys.stderr))
 logger.setLevel(logging.INFO)
 
+_HEURISTIC_LABEL = "heuristic(chars/4)"
+_TOKENIZER: tuple[Any, str] | None = None
+
+
+def _resolve_tokenizer() -> tuple[Any, str]:
+    """Return ``(encode_callable_or_None, label)``, resolved once and cached.
+
+    ``OMLX_SHRINK_TOKENIZER`` controls the choice:
+
+    * ``auto`` (default) - use ``tiktoken``'s ``cl100k_base`` when installed;
+      otherwise fall back to the character heuristic.
+    * a tiktoken encoding name (for example ``o200k_base``) - use that encoding.
+    * ``heuristic`` / ``off`` / ``none`` / ``chars`` - always use the heuristic.
+    """
+    global _TOKENIZER
+    if _TOKENIZER is not None:
+        return _TOKENIZER
+
+    setting = os.environ.get("OMLX_SHRINK_TOKENIZER", "auto").strip().lower()
+    fallback: tuple[Any, str] = (None, _HEURISTIC_LABEL)
+    if setting in {"heuristic", "off", "none", "chars", ""}:
+        _TOKENIZER = fallback
+        return _TOKENIZER
+    if tiktoken is None:
+        if setting != "auto":
+            logger.warning(
+                "OMLX_SHRINK_TOKENIZER=%r requested but tiktoken is not installed; "
+                "using %s",
+                setting,
+                _HEURISTIC_LABEL,
+            )
+        _TOKENIZER = fallback
+        return _TOKENIZER
+
+    encoding_name = "cl100k_base" if setting == "auto" else setting
+    try:
+        encoder = tiktoken.get_encoding(encoding_name)
+    except Exception as error:  # network/IO failure or unknown encoding
+        logger.warning("tokenizer %r unavailable (%s); using %s", encoding_name, error, _HEURISTIC_LABEL)
+        _TOKENIZER = fallback
+        return _TOKENIZER
+
+    _TOKENIZER = (encoder.encode, f"tiktoken:{encoding_name}")
+    return _TOKENIZER
+
+
 server = MCPServer("oMLX Prompt Shrink")
 
 
@@ -72,6 +123,17 @@ def _content_text(content: Any) -> str:
 
 
 def _estimate_tokens(messages: list[dict[str, Any]]) -> int:
+    encode, _ = _resolve_tokenizer()
+    if encode is not None:
+        text = "\n".join(
+            _content_text(message.get("content", ""))
+            for message in messages
+            if isinstance(message, dict)
+        )
+        try:
+            return max(1, len(encode(text)))
+        except Exception as error:  # pragma: no cover - defensive
+            logger.warning("tokenizer failed (%s); using %s", error, _HEURISTIC_LABEL)
     chars = 0
     for message in messages:
         content = message.get("content", "") if isinstance(message, dict) else ""
@@ -239,6 +301,7 @@ def estimate_context(
 ) -> str:
     """Estimate the current context size in tokens before sending it to the model."""
     estimated = _estimate_tokens(messages)
+    _, tokenizer = _resolve_tokenizer()
     return json.dumps(
         {
             "estimated_context_tokens": estimated,
@@ -246,6 +309,7 @@ def estimate_context(
             "remaining_tokens": max_context_tokens - estimated,
             "should_trim": estimated > max_context_tokens,
             "message_count": len(messages),
+            "tokenizer": tokenizer,
         },
         ensure_ascii=False,
     )
