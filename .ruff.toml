@@ -6,4 +6,4 @@ select = ["E", "F", "W", "I", "B", "UP"]
 ignore = ["E501"]
 
 [lint.per-file-ignores]
-"tests/*" = ["B011"]
+"test/*" = ["B011"]
